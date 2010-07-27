@@ -26,6 +26,7 @@
 <html>
   <head>
     <title>OMeta/JS 2.0 Workspace</title>
+    <script src="codemirror.min.js"></script>
     <script src="prototype.js"></script>
     <script src="prototype-fix.js"></script>
     <script src="lib.js"></script>
@@ -39,15 +40,32 @@
     <script src="workspace.js"></script>
     <script src="wiki.js"></script>
     <script>
-
 function toggleVisible(id) {
+  $(id).toggle();
+  /*
   var style = document.getElementById(id).style
   style.visibility = style.visibility == "hidden" ? "visible" : "hidden"
   style.display    = style.display    == "block"  ? "none"    : "block"
+  */
 }
 
 function initializeThisPage() {
-  $('workspaceForm').source.onkeydown = onShortCutKey
+  Editor.grabKeys(
+    function (evt) {
+      if (!(evt.altKey || evt.ctrlKey || evt.metaKey))
+        return;
+      var code = evt.charCode ? evt.charCode : evt.keyCode;
+      switch(code) {
+      case 68: doIt(); break;
+      case 80: printIt(); break;
+      case 83: saveIt(); break;
+      }
+      evt.stop();
+    },
+    function (code) { return ( code == 68 || code == 80 || code == 83 ); }
+  );
+
+  //$('source').onkeydown = onShortCutKey
   var makeProjectSelector = function(id) {
     $(id + "Home").innerHTML =
       "<select id=" + id +
@@ -74,9 +92,15 @@ function initializeThisPage() {
       addOption('projectSelector', projects[idx])
   }
   catch (e) { }
+  Editor.setCode('');
+  $('output').update('');
+  $('workspaceForm').translation.value = ''
+  $('workspaceForm').source.origValue = '';
+  /*
   $('workspaceForm').source.value      = $('workspaceForm').source.origValue = ''
   $('workspaceForm').translation.value = ''
   $('workspaceForm').transcript.value  = ''
+  */
   loadProject()
 }
 
@@ -94,11 +118,11 @@ function translateCode(s) {
       tree             = BSOMetaJSParser.matchAll(s, "topLevel", undefined, function(m, i) { throw objectThatDelegatesTo(fail, {errorPos: i}) })
   return BSOMetaJSTranslator.match(tree, "trans", undefined, translationError)
 }
-
+/*
 function include(fileName) {
   return eval(readFile(fileName))
 }
-
+*/
     </script>
   </head>
   <body onLoad="initializeThisPage()">
@@ -125,33 +149,45 @@ function include(fileName) {
         Pressing <input type=button value="do it" onClick="doIt()"> without a selection evaluates the line that the cursor is on.
         </li><li>
         <input type=button value="print it" onClick="printIt()"> is like <input type=button value="do it" onClick="doIt()">,
-        but it also prints the result.
+          but it also prints the result (in the output area on the left).
         </li></bl>
         Also, you can press <input type=button value="save it" onClick="saveIt()"> to save the current project.
       </td></tr></table>
     </div>
+<!--
     <b><span title="A useful place to add new HTMLElements - see Canvas project for an example">Play Area</span></b>
     <input type=button value="+/-" onClick="toggleVisible('playArea')">
+-->
     <br>
     <div id=playArea style="visibility: visible; display: block"></div>
     <form id=workspaceForm>
       <b>Source</b>
-      <input type=button value="+/-" onClick="toggleVisible('source')">
+      <input type=button value="+/-" onClick="toggleVisible('sourceTable')">
       <br>
-      <div id=source style="visibility: visible; display: block">
-        <textarea cols=132 rows=24 name=source style="font-family:monaco, monospace; font-size: 10pt"></textarea><br>
-        <input type=button value="print it (ctrl+p)"  onClick="printIt()"     style="margin-bottom: .4em">
-        <input type=button value="do it (ctrl+d)"     onClick="doIt()"        style="margin-bottom: .4em">
-        <input type=button value="save it (ctrl + s)" onClick="saveProject()" style="margin-bottom: .4em"><br>
-      </div>
+      <table style="width:100%" id="sourceTable">
+        <tr>
+          <td style="width:70%">
+            <div id=source style="visibility: visible; display: block; border: 1px gray solid;">
+              <textarea cols=132 rows=24 name=source id="sourceTextarea" style="font-family:monaco, monospace; font-size: 10pt"></textarea><br>
+              <input type=button value="print it (ctrl+p)"  onClick="printIt()" style="margin-bottom: .4em" />
+              <input type=button value="do it (ctrl+d)"     onClick="doIt()" style="margin-bottom: .4em" />
+              <input type=button value="save it (ctrl + s)" onClick="saveProject()" style="margin-bottom: .4em" />
+              <input type=button value="clear output" onClick="$('output').update('')" style="margin-bottom: .4em" /><br />
+            </div>
+          </td>
+          <td>
+            <div id="output" style="overflow:scroll; height:450px; font-family:monaco, monospace; font-size:10pt;"></div>
+          </td>
+        </tr>
+      </table>
       <b><span title="Shows the JavaScript translation of the last thing that was evaluated above">Translation</span></b>
-      <input type=button value="+/-" onClick="toggleVisible('translation')">
+      <input type=button value="+/-" onClick="toggleVisible('translationDiv')">
       <br>
-      <div id=translation style="visibility: hidden; display: none">
+      <div id="translationDiv" style="display: none">
         <textarea cols=132 rows=4 name=translation style="font-family:monaco, monospace; font-size: 10pt; margin-bottom: .4em">
         </textArea>
       </div>
-
+<!--
       <b>Transcript</b>
       <input type=button value="+/-" onClick="toggleVisible('transcript')">
       <br>
@@ -159,8 +195,18 @@ function include(fileName) {
         <textarea cols=132 rows=4 name=transcript
                   style="font-family:monaco, monospace; font-size: 10pt; margin-bottom: .4em"></textArea>
       </div>
+-->
     </form>
     To learn more about OMeta, click <a href=http://www.tinlizzie.org/ometa/>here</a>.<br>
   </body>
+<script>
+var Editor = CodeMirror.fromTextArea('sourceTextarea', {
+  height: "400px",
+  basefiles: ["codemirror-base.min.js"],
+  stylesheet: "ometacolors.css",
+  path: "./",
+  textWrapping: false
+});
+</script>
 </html>
 

@@ -65,6 +65,7 @@ function translateCode(s) {
 // ---------------------------------------------------------------------------------------------------------------------------
 
 /* event handler for short cut key */
+/*
 function onShortCutKey(evt) {
   evt = evt ? evt : window.event;
   if (!evt)
@@ -95,11 +96,25 @@ function onShortCutKey(evt) {
   }
   return false
 }
-
+*/
 function printIt() {
   var result       = evalSelection()
   if (!result)
     return
+  
+  var output = $('output');
+  var getTextContent = function(element) {
+    if (Object.isUndefined(element.textContent)) {
+      return element.innerText
+    }
+    return element.textContent
+  }
+  var separator = '<div style="border-top:1px #ccc solid; margin: 5px;"></div>'
+  if (getTextContent(output).strip() === '')
+    separator = ''
+  $('output').insert(separator +  result)
+
+  /*
   var editor       = result.source.editor,
       end          = result.source.end,
       head         = editor.value.substring(0, end),
@@ -108,17 +123,24 @@ function printIt() {
   editor.value     = head + result.result + tail;
   editor.scrollTop = oldScrollTop
   setCaretSelection(editor, end, head.length + result.result.length)
+  */
 }
 
 function doIt() {
   var result = evalSelection()
   if (result)
+    Editor.focus();
+  /*
+  var result = evalSelection()
+  if (result)
     result.source.editor.focus()
+  */
 }
 
 function saveIt() { }
 
 /* Get selection of textarea */
+/*
 function getCaretSelection(field) {
     field.focus();
     var result = { start: 0, end: 0 };
@@ -137,8 +159,9 @@ function getCaretSelection(field) {
     }
     return result
 }
-
+*/
 /* Set selection of textarea */
+/*
 function setCaretSelection(field, start, end) {
     field.focus()
     // IE
@@ -156,9 +179,14 @@ function setCaretSelection(field, start, end) {
       field.selectionEnd   = end
     }
 }
-
+*/
 /* Get expression from textarea */
 function getSource() {
+  var text  = Editor.selection()
+  if (text === '')
+    text = Editor.lineContent(Editor.cursorLine())
+  return text
+/*
   var editor    = $('workspaceForm').source,
       selection = getCaretSelection(editor),
       start     = selection.start,
@@ -183,34 +211,42 @@ function getSource() {
     end:    end,
     text:   text
   }
+*/
 }
 
 function evalSelection() {
   var source = getSource()
-  try { $('workspaceForm').translation.value = translateCode(source.text) }
+  try { $('workspaceForm').translation.value = translateCode(source) }
   catch (e) {
     if (e.errorPos != undefined) {
-      var errorPos     = source.start + e.errorPos
+      var errorPos     = Editor.cursorPosition(true).character + e.errorPos
           errorMsg     = " Parse error ->",
           oldScrollTop = $('workspaceForm').source.scrollTop
-      $('workspaceForm').source.value = $('workspaceForm').source.value.substring(0, errorPos) + errorMsg +
+      /*$('workspaceForm').source.value = $('workspaceForm').source.value.substring(0, errorPos) + errorMsg +
                                         $('workspaceForm').source.value.substring(errorPos, $('workspaceForm').source.value.length)
       $('workspaceForm').source.scrollTop = oldScrollTop
       setCaretSelection($('workspaceForm').source, errorPos, errorPos + errorMsg.length)
+      */
+      var allCode = Editor.getCode();
+      Editor.setCode(allCode.substring(0, errorPos) + errorMsg + allCode.substring(errorPos));
     }
     return undefined
   }
   try {
+    return " " + eval($('workspaceForm').translation.value);
+    /*
     return {
       source: source,
       result: " " + eval($('workspaceForm').translation.value)
     }
+    */
   } catch (e) {
     alert("Oops!\n\n" + e)
     throw e
   }
 }
 
+/*
 Transcript = {
   show:  function(x) {
            $('workspaceForm').transcript.value     = $('workspaceForm').transcript.value + x + "\n"
@@ -221,3 +257,4 @@ Transcript = {
          }
 }
 
+*/
