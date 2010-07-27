@@ -104,9 +104,11 @@ function evalSelection() {
   catch (e) {
     if (e.errorPos != undefined) {
       var errorPos     = Editor.cursorPosition(true).character + e.errorPos
-          errorMsg     = " Parse error ->"
+          errorIndicator     = ">>>"
       var allCode = Editor.getCode();
-      Editor.setCode(allCode.substring(0, errorPos) + errorMsg + allCode.substring(errorPos));
+      var separator = '<div style="border-top:1px #ccc solid; margin: 5px;"></div>'
+      Editor.setCode(allCode.substring(0, errorPos) + errorIndicator + allCode.substring(errorPos));
+      $('output').insert(separator + 'Parser error (the position is indicated in the code with ">>>")');
     }
     return undefined
   }
