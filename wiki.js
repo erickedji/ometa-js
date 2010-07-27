@@ -22,7 +22,6 @@ function writeFile(name, text) {
     throw "unable to write file '" + name + "'"
 }
 
-//function projectIsDirty() { return $('workspaceForm').source.value != $('workspaceForm').source.origValue }
 function projectIsDirty() { return Editor.getCode() != $('workspaceForm').source.origValue }
 dirtyAreYouSureMessage = "The changes you have made to this project will be lost unless you press 'cancel' " +
                          "and save your work. Proceed?"
@@ -39,7 +38,6 @@ function loadProject() {
     return
   var projName = document.location.hash.substring(1),
       projData = readFile(projName)
-  //$('workspaceForm').source.value     = projData
   Editor.setCode(projData);
   $('workspaceForm').source.origValue = projData
   $('title').innerHTML = "<font color=#000088>" + projName.replace(/_/g, " ") + "</font>" + titleRest
@@ -49,7 +47,6 @@ function saveProject() {
   try {
     var projName = document.location.hash.substring(1),
         projData = Editor.getCode()
-//        projData = $('workspaceForm').source.value
     // the following is an ugly hack to fix a bug in prototype.js
     if (projData == "")
       projData = " "
